@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/astaxie/beego/validation"
@@ -9,6 +8,7 @@ import (
 	"github.com/huangzhuo492008824/go-gin-example/models"
 	"github.com/huangzhuo492008824/go-gin-example/pkg/app"
 	"github.com/huangzhuo492008824/go-gin-example/pkg/e"
+	"github.com/huangzhuo492008824/go-gin-example/pkg/logging"
 	"github.com/huangzhuo492008824/go-gin-example/pkg/setting"
 	"github.com/huangzhuo492008824/go-gin-example/pkg/util"
 	"github.com/huangzhuo492008824/go-gin-example/service/article_service"
@@ -62,14 +62,13 @@ func AddArticle(c *gin.Context) {
 	// @Param created_by body string false "CreatedBy"
 	json := make(map[string]interface{})
 	c.BindJSON(&json)
-	log.Printf("%v", &json)
-	log.Printf("%T", int(json["tag_id"].(float64)))
 	tagId := int(json["tag_id"].(float64))
 	title := json["title"].(string)
 	desc := json["desc"].(string)
 	content := json["content"].(string)
-	state := int(json["tag_id"].(float64))
-	createdBy := json["created_by"].(string)
+	state := int(json["state"].(float64))
+	// createdBy := json["created_by"].(string)
+	createdBy, _ := c.Get("user")
 
 	valid := validation.Validation{}
 	valid.Min(tagId, 1, "tag_id").Message("标签id必须大于1")
@@ -96,6 +95,8 @@ func AddArticle(c *gin.Context) {
 		} else {
 			code = e.ERROR_NOT_EXIST_TAG
 		}
+	} else {
+		logging.Error("%v", valid.Errors)
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"code": code,

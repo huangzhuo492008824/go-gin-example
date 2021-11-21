@@ -16,8 +16,6 @@ func JWT(c *gin.Context) {
 
 	code = e.SUCCESS
 	token := c.GetHeader("token")
-	// if c.Request.Header.Get("token"):
-	// token := c.Request.Header["token"][0]
 	if token == "" {
 		code = e.INVALID_PARAMS
 	} else {
@@ -26,6 +24,8 @@ func JWT(c *gin.Context) {
 			code = e.ERROR_AUTH_CHECK_TOKEN_FAIL
 		} else if time.Now().Unix() > claims.ExpiresAt {
 			code = e.ERROR_AUTH_CHECK_TOKEN_TIMEOUT
+		} else {
+			c.Set("user", claims.Username)
 		}
 	}
 	if code != e.SUCCESS {
